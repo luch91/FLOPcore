@@ -289,7 +289,8 @@ def test_healthz_query_variants_use_one_worker_route_and_cache_key():
     lane = _between(worker, "async function edgeCached(", "/** Resolves")
     assert "const key = cacheKey(new URL(request.url), pathname) ?? request;" in lane
     assert "cache.match(key)" in lane
-    assert "fetch(key," in lane
+    assert "const originRequest = new Request(key, { headers: request.headers });" in lane
+    assert "fetch(originRequest," in lane
     assert "cache.put(key," in lane
 
 

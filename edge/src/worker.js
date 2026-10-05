@@ -145,7 +145,11 @@ async function edgeCached(request, pathname, seconds) {
 
   let fresh;
   try {
-    fresh = await fetch(key, { signal: AbortSignal.timeout(ORIGIN_TIMEOUT_MS) });
+    // Keep the canonical URL for the origin request, while preserving request headers
+    // that can affect the response (notably Origin for CORS). The cache identity remains
+    // query-insensitive for lanes whose contract ignores query parameters.
+    const originRequest = new Request(key, { headers: request.headers });
+    fresh = await fetch(originRequest, { signal: AbortSignal.timeout(ORIGIN_TIMEOUT_MS) });
   } catch (err) {
     // An origin that will not answer inside the budget IS the health answer, so report it
     // here rather than letting the timeout escape to the fail-open handler. That handler
